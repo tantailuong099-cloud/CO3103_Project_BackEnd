@@ -80,18 +80,18 @@ export class UsersService {
   async restore(id: string): Promise<UserDocument> {
     try {
       const user = await this.userModel.findById(id).exec();
-  
+
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
-  
+
       if (!user.deleted) {
         throw new BadRequestException(`User with ID ${id} is not deleted`);
       }
-  
+
       user.deleted = false;
       await user.save();
-  
+
       return user;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
