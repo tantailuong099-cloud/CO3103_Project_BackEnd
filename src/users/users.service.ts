@@ -97,4 +97,9 @@ export class UsersService {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.userModel.findOne({ email: email }).exec();
+    return user;
+  }
 }
