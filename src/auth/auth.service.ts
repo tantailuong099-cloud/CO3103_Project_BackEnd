@@ -45,7 +45,7 @@ export class AuthService {
       email: user.email,
     });
 
-    return accessToken;
+    return { access_token: accessToken };
   }
 
   async verifyToken(token: string) {

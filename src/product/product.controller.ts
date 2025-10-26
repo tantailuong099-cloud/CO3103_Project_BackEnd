@@ -21,6 +21,11 @@ export class ProductController {
     return this.productService.findAll();
   }
 
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<Product> {
+    return this.productService.getProduct(id);
+  }
+
   @Post()
   async create(@Body() createUserDto: CreateProductDto): Promise<Product> {
     return this.productService.create(createUserDto);

@@ -5,16 +5,12 @@ import { CartItem, CartItemSchema } from "./cartItem.schema";
 export type CartDocument = HydratedDocument<Cart>;
 
 @Schema()
-@Schema()
 export class Cart {
-
-  
   @Prop({ required: true })
-  cartOwner: string; 
+  cartOwner: string;
 
   @Prop({ type: [CartItemSchema], default: [] })
   items: CartItem[];
 }
-
 
 export const CartSchema = SchemaFactory.createForClass(Cart);
