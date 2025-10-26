@@ -24,6 +24,12 @@ export class CartController {
     return this.cartService.getCartByUser(userId);
   }
 
+  @Get('detail')
+  async getproductDetail(@Req() req) {
+    const userId = req.user.userId;
+    return this.cartService.getProductDetail(userId);
+  }
+
   @Post()
   async createCart(@Req() req): Promise<Cart> {
     const userId = req.user.userId;

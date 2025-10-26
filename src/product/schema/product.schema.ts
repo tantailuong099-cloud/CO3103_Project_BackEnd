@@ -9,10 +9,46 @@ export class Product {
   name: string;
 
   @Prop()
+  avatar: string;
+
+  @Prop()
+  releaseDate: Date;
+
+  @Prop()
+  category: string;
+
+  @Prop()
+  type: string;
+
+  @Prop()
+  version: string;
+
+  @Prop()
+  price: number;
+
+  @Prop()
   stock: number;
 
   @Prop()
   description: string;
+
+  @Prop()
+  metacriticScore: number;
+
+  @Prop()
+  metacriticURL: string;
+
+  @Prop()
+  ignScore: number;
+
+  @Prop()
+  ignURL: string;
+
+  @Prop()
+  minPlayer: number;
+
+  @Prop()
+  ageConstraints: number;
 
   @Prop()
   productImage: string[];

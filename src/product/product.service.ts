@@ -24,6 +24,21 @@ export class ProductService {
     return this.productModel.find(filter);
   }
 
+  async findByCategory(category: string): Promise<ProductDocument[]> {
+    const filter = {
+      deleted: false,
+      category: category,
+    };
+
+    return this.productModel.find(filter);
+  }
+
+  async getProduct(id: string): Promise<ProductDocument> {
+    const product = await this.productModel.findById(id).exec();
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
+  }
+
   async create(product: CreateProductDto): Promise<ProductDocument> {
     const newProduct = new this.productModel(product);
     return newProduct.save();

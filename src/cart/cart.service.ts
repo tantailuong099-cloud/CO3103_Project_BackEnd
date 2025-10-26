@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cart, CartDocument } from './schema/cart.schema';
 import { Model } from 'mongoose';
+import { ProductService } from '../product/product.service';
+import { CartItem } from './schema/cartItem.schema';
 
 @Injectable()
 export class CartService {
-  constructor(@InjectModel(Cart.name) private cartModel: Model<CartDocument>) {}
+  constructor(
+    @InjectModel(Cart.name) private cartModel: Model<CartDocument>,
+    private readonly productService: ProductService,
+  ) {}
 
   async create(userId: string): Promise<CartDocument> {
     const existingCart = await this.cartModel
@@ -34,7 +39,7 @@ export class CartService {
     if (!cart) {
       cart = new this.cartModel({
         cartOwner: userId,
-        items: []
+        items: [],
       });
     }
 
@@ -60,8 +65,31 @@ export class CartService {
       throw new Error('Cart not found');
     }
 
-    cart.items = cart.items.filter((item) => item.productId.toString().trim() !== productId.toString().trim());
+    cart.items = cart.items.filter(
+      (item) =>
+        item.productId.toString().trim() !== productId.toString().trim(),
+    );
     return await cart.save();
+  }
+
+  async getProductDetail(userId: string) {
+    const cart = await this.getCartByUser(userId);
+
+    if (!cart.items || cart.items.length === 0) {
+      return [];
+    }
+
+    const productDetails = await Promise.all(
+      cart.items.map(async (item: CartItem) => {
+        const product = await this.productService.getProduct(item.productId);
+        return {
+          ...product.toObject(),
+          quantity: item.quantity,
+        };
+      }),
+    );
+
+    return productDetails;
   }
 
   async updateItemQuantity(
@@ -72,7 +100,9 @@ export class CartService {
     const cart = await this.cartModel.findOne({ cartOwner: userId });
     if (!cart) throw new Error('Cart not found');
 
-    const item = cart.items.find(i => i.productId.toString().trim() === productId.toString().trim());
+    const item = cart.items.find(
+      (i) => i.productId.toString().trim() === productId.toString().trim(),
+    );
     if (!item) throw new Error('Item not found in cart');
 
     item.quantity = quantity;
