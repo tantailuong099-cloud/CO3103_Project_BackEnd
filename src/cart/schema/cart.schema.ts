@@ -1,6 +1,6 @@
-import { Schema, SchemaFactory, Prop } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
-import { CartItem, CartItemSchema } from "./cartItem.schema";
+import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+import { CartItem, CartItemSchema } from './cartItem.schema';
 
 export type CartDocument = HydratedDocument<Cart>;
 
@@ -11,6 +11,15 @@ export class Cart {
 
   @Prop({ type: [CartItemSchema], default: [] })
   items: CartItem[];
+
+  @Prop({ default: 0 })
+  subTotalD: number;
+
+  @Prop({ default: 0 })
+  subTotalP: number;
+
+  @Prop({ default: 0 })
+  total: number;
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart);

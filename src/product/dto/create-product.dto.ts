@@ -1,9 +1,10 @@
+import { GameType } from '../schema/product.schema';
+
 export class CreateProductDto {
   name: string;
-  avatar: string;
   releaseDate: Date;
   category: string;
-  type: string;
+  type: GameType[]; // FE gửi dạng array, hoặc service convert
   version: string;
   price: number;
   stock: number;
@@ -12,7 +13,13 @@ export class CreateProductDto {
   metacriticURL?: string;
   ignScore?: number;
   ignURL?: string;
-  minPlayer: number;
+  playerNumber: number;
   ageConstraints: number;
-  productImage: string[];
+
+  // Các trường còn lại giữ nguyên
+  videoLink?: string[];
+  manufactor?: string;
+  options?: string[];
+  playmode?: string[];
+  language?: string[];
 }

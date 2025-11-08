@@ -14,7 +14,9 @@ export class CategoriesController {
   }
 
   @Get(':category')
-  async getProductbyCategory(@Param('category') category: string): Promise<Product[]> {
+  async getProductbyCategory(
+    @Param('category') category: string,
+  ): Promise<Product[]> {
     return this.categoryService.getProductbyCategory(category);
   }
 

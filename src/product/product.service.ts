@@ -9,11 +9,13 @@ import { Product, ProductDocument } from './schema/product.schema';
 import { Model } from 'mongoose';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async findAll(): Promise<ProductDocument[]> {
@@ -39,8 +41,33 @@ export class ProductService {
     return product;
   }
 
-  async create(product: CreateProductDto): Promise<ProductDocument> {
-    const newProduct = new this.productModel(product);
+  async create(
+    product: CreateProductDto,
+    files: {
+      avatar?: Express.Multer.File[];
+      productImage?: Express.Multer.File[];
+    },
+  ): Promise<ProductDocument> {
+    const avatarFile = files?.avatar?.[0];
+    const productImageFiles = files?.productImage || [];
+
+    let avatarUrl = null;
+    if (avatarFile) {
+      const uploadedAvatar =
+        await this.cloudinaryService.uploadFile(avatarFile);
+      avatarUrl = uploadedAvatar.secure_url;
+    }
+
+    const productImageUrls = [];
+    for (const img of productImageFiles) {
+      const uploadedImg = await this.cloudinaryService.uploadFile(img);
+      productImageUrls.push(uploadedImg.secure_url);
+    }
+    const newProduct = new this.productModel({
+      ...product,
+      avatar: avatarUrl,
+      productImage: productImageUrls,
+    });
     return newProduct.save();
   }
 
@@ -61,6 +88,17 @@ export class ProductService {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  async updateStock(id: string, quantity: number) {
+    if (quantity < 0) throw new Error('Stock cannot be negative');
+    const product = await this.productModel.findByIdAndUpdate(
+      id,
+      { stock: quantity },
+      { new: true },
+    );
+    if (!product) throw new Error('Product not found');
+    return product;
   }
 
   async softDelete(id: string): Promise<ProductDocument> {

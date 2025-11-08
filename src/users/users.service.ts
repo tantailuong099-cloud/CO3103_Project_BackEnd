@@ -39,7 +39,7 @@ export class UsersService {
 
       return updatedUser;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(err);
     }
   }
 

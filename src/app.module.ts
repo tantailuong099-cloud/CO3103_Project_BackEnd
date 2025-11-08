@@ -8,6 +8,7 @@ import { CartModule } from './cart/cart.module';
 import { AuthModule } from './auth/auth.module';
 import { OrderModule } from './order/order.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CategoriesModule } from './categories/categories.module';
     AuthModule,
     OrderModule,
     CategoriesModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,6 +3,11 @@ import { HydratedDocument } from 'mongoose';
 
 export type ProductDocument = HydratedDocument<Product>;
 
+export enum GameType {
+  DIGITAL = 'digital',
+  PHYSICAL = 'physical',
+}
+
 @Schema()
 export class Product {
   @Prop()
@@ -18,7 +23,7 @@ export class Product {
   category: string;
 
   @Prop()
-  type: string;
+  type: GameType;
 
   @Prop()
   version: string;
@@ -45,13 +50,28 @@ export class Product {
   ignURL: string;
 
   @Prop()
-  minPlayer: number;
+  playerNumber: number;
 
   @Prop()
   ageConstraints: number;
 
   @Prop()
   productImage: string[];
+
+  @Prop()
+  videoLink: string[];
+
+  @Prop()
+  manufactor: string;
+
+  @Prop()
+  options: string[];
+
+  @Prop()
+  playmode: string[];
+
+  @Prop()
+  language: string[];
 
   @Prop({ default: false })
   deleted: boolean;
