@@ -4,11 +4,13 @@ import { ProductController } from './product.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from './schema/product.schema';
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
     CloudinaryModule,
+    UsersModule,
   ],
   providers: [ProductService],
   controllers: [ProductController],

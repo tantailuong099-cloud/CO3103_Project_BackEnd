@@ -5,16 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './schema/users.schema';
+import { UserBased, UserBasedDocument } from './schema/userbase.schema';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(UserBased.name) private userModel: Model<UserBasedDocument>,
+  ) {}
 
-  async findAll(): Promise<UserDocument[]> {
+  async findAll(): Promise<UserBasedDocument[]> {
     const filter = {
       deleted: false,
     };
@@ -22,12 +24,40 @@ export class UsersService {
     return this.userModel.find(filter);
   }
 
-  async create(user: CreateUserDto): Promise<UserDocument> {
+  async findUser(): Promise<UserBasedDocument[]> {
+    const filter = {
+      deleted: false,
+      role: 'User',
+    };
+
+    return this.userModel.find(filter);
+  }
+
+  async findAdmin(): Promise<UserBasedDocument[]> {
+    const filter = {
+      deleted: false,
+      role: 'Admin',
+    };
+
+    return this.userModel.find(filter);
+  }
+
+  async findById(userId: string) {
+    return this.userModel.findById(userId);
+  }
+
+  async create(user: CreateUserDto): Promise<UserBasedDocument> {
+    const { role } = user;
+
+    if (!['User', 'Admin'].includes(role)) {
+      throw new BadRequestException('Invalid Role');
+    }
+
     const newUser = new this.userModel(user);
     return newUser.save();
   }
 
-  async update(id: string, user: UpdateUserDto): Promise<UserDocument> {
+  async update(id: string, user: UpdateUserDto): Promise<UserBasedDocument> {
     try {
       const updatedUser = await this.userModel
         .findOneAndUpdate({ _id: id, deleted: false }, user, { new: true })
@@ -43,7 +73,7 @@ export class UsersService {
     }
   }
 
-  async softDelete(id: string): Promise<UserDocument> {
+  async softDelete(id: string): Promise<UserBasedDocument> {
     try {
       const updatedUser = await this.userModel
         .findOneAndUpdate(
@@ -63,7 +93,7 @@ export class UsersService {
     }
   }
 
-  async hardDelete(id: string): Promise<UserDocument> {
+  async hardDelete(id: string): Promise<UserBasedDocument> {
     try {
       const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
 
@@ -77,7 +107,7 @@ export class UsersService {
     }
   }
 
-  async restore(id: string): Promise<UserDocument> {
+  async restore(id: string): Promise<UserBasedDocument> {
     try {
       const user = await this.userModel.findById(id).exec();
 
@@ -98,7 +128,7 @@ export class UsersService {
     }
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<UserBased | null> {
     const user = await this.userModel.findOne({ email: email }).exec();
     return user;
   }

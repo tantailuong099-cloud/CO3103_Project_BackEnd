@@ -8,20 +8,29 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './schema/product.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from '@/auth/jwt/jwt-auth.guard';
 
 @Controller('product')
+@UseGuards(JwtAuthGuard)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
   async findAll(): Promise<Product[]> {
     return this.productService.findAll();
+  }
+
+  @Get('trash')
+  async findTrash(): Promise<Product[]> {
+    return this.productService.findTrash();
   }
 
   @Get(':id')
@@ -43,16 +52,43 @@ export class ProductController {
       avatar?: Express.Multer.File[];
       productImage?: Express.Multer.File[];
     },
+    @Req() req,
   ): Promise<Product> {
-    return this.productService.create(createUserDto, files);
+    console.log('BODY:', createUserDto);
+    console.log('FILES:', files);
+
+    const userId = req.user.userId;
+
+    return this.productService.create(createUserDto, files, userId);
   }
 
+  // @Patch(':id')
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateUserDto: UpdateProductDto,
+  // ): Promise<Product> {
+  //   return this.productService.update(id, updateUserDto);
+  // }
+
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'productImage', maxCount: 10 },
+    ]),
+  )
   async update(
     @Param('id') id: string,
-    @Body() updateUserDto: UpdateProductDto,
-  ): Promise<Product> {
-    return this.productService.update(id, updateUserDto);
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles()
+    files: {
+      avatar?: Express.Multer.File[];
+      productImage?: Express.Multer.File[];
+    },
+    @Req() req,
+  ) {
+    const userId = req.user.userId; // Lấy userId từ token
+    return this.productService.update(id, updateProductDto, files, userId);
   }
 
   @Patch('/deleted/:id')

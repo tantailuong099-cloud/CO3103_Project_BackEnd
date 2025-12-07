@@ -13,6 +13,17 @@ export class Category {
 
   //   @Prop({ default: false })
   //   deleted: boolean;
+  @Prop()
+  createdBy: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedBy: string;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

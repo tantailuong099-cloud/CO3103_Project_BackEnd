@@ -4,6 +4,7 @@ import { CategoriesService } from './categories.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Category, CategorySchema } from './schema/categories.schema';
 import { ProductModule } from '../product/product.module';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ProductModule } from '../product/product.module';
       { name: Category.name, schema: CategorySchema },
     ]),
     ProductModule,
+    UsersModule,
   ],
   controllers: [CategoriesController],
   providers: [CategoriesService],

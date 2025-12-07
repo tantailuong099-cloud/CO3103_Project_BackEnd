@@ -5,7 +5,6 @@ import { Order, OrderDocument } from './schema/order.schema';
 import { CartService } from '../cart/cart.service';
 import { ProductService } from '../product/product.service';
 import { GameType } from '@/product/schema/product.schema';
-import { CartItem } from '../cart/schema/cartItem.schema';
 
 @Injectable()
 export class OrderService {

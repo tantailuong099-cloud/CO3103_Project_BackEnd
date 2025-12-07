@@ -59,7 +59,7 @@ export class Product {
   productImage: string[];
 
   @Prop()
-  videoLink: string[];
+  videoLink: string;
 
   @Prop()
   manufactor: string;
@@ -68,10 +68,22 @@ export class Product {
   options: string[];
 
   @Prop()
-  playmode: string[];
+  playmode: string;
 
   @Prop()
-  language: string[];
+  language: string;
+
+  @Prop()
+  createdBy: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedBy: string;
+
+  @Prop()
+  updatedAt: Date;
 
   @Prop({ default: false })
   deleted: boolean;
