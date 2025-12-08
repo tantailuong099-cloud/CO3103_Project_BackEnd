@@ -3,7 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type OrderItemDocument = HydratedDocument<OrderItem>;
 
-@Schema({ _id: false })
+@Schema({ _id: false, timestamps: true })
 export class OrderItem {
   @Prop({ type: String, required: true })
   productId: string;
