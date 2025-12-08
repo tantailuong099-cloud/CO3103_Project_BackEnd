@@ -4,7 +4,7 @@ import { CartItem, CartItemSchema } from './cartItem.schema';
 
 export type CartDocument = HydratedDocument<Cart>;
 
-@Schema()
+@Schema({timestamps: true})
 export class Cart {
   @Prop({ required: true })
   cartOwner: string;

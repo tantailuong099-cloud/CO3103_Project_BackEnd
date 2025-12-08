@@ -5,4 +5,5 @@ export class CreateUserDto {
   role: 'User' | 'Admin';
   avatar?: string;
   phoneNumber?: string;
+  address?: string;
 }
