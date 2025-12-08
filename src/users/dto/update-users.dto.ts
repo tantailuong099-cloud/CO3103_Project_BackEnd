@@ -6,5 +6,4 @@ export class UpdateUserDto {
   avatar?: string;
   phoneNumber?: string;
   address?: string;
-
 }

@@ -33,7 +33,8 @@ export class UserBased {
   @Prop({ default: false })
   deleted: boolean;
 
-  address?: string;
+  @Prop({ default: null })
+    address: string;
 }
 
 export const UserBasedSchema = SchemaFactory.createForClass(UserBased);
