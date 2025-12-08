@@ -25,17 +25,19 @@ export class CategoriesController {
     return this.categoryService.getlist();
   }
 
-  @Get(':id')
-  async getCategoryDetail(@Param('id') id: string): Promise<Category> {
-    return this.categoryService.findOne(id);
-  }
-
-  @Get(':category')
+  @Get('product/:category')
   async getProductbyCategory(
     @Param('category') category: string,
   ): Promise<Product[]> {
     return this.categoryService.getProductbyCategory(category);
   }
+
+  @Get(':id')
+  async getCategoryDetail(@Param('id') id: string): Promise<Category> {
+    return this.categoryService.findOne(id);
+  }
+
+  
 
   // @Post()
   // async createNewCategory(

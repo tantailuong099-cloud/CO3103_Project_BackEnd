@@ -11,7 +11,8 @@ import { UsersService } from './users.service';
 import { UserBased } from './schema/userbase.schema';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
-
+import { Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -30,6 +31,13 @@ export class UsersController {
   async findAdmin() {
     return this.usersService.findAdmin();
   }
+
+  @Get('me')
+    @UseGuards(JwtAuthGuard) // nếu có auth guard
+    getMe(@Req() req) {
+      return this.usersService.findById(req.user.userId);
+    }
+
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<UserBased> {

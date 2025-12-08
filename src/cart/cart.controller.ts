@@ -54,6 +54,7 @@ export class CartController {
     @Body('productId') productId: string,
     @Body('quantity') quantity: number,
   ): Promise<Cart> {
+    console.log("✅ USER:", req.user);
     const userId = req.user.userId;
     return this.cartService.addItemToCart(userId, productId, quantity);
   }

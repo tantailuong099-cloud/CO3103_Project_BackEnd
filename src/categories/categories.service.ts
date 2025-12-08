@@ -69,17 +69,16 @@ export class CategoriesService {
   }
 
   // ... (Hàm getProductbyCategory giữ nguyên)
-  async getProductbyCategory(categoryName: string): Promise<ProductDocument[]> {
+  async getProductbyCategory(id: string): Promise<ProductDocument[]> {
     const categoryDoc = await this.modelCategory
-      .findOne({ name: categoryName })
+      .findById(id)
       .exec();
 
     if (!categoryDoc) {
       return [];
     }
 
-    const categoryId: string = categoryDoc._id.toString();
-    return this.productService.findByCategory(categoryId);
+    return this.productService.findByCategory(id);
   }
 
   // Hàm helper để tìm category theo ID (dùng cho edit/delete)

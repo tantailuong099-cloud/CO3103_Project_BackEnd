@@ -11,21 +11,65 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { UsersService } from '@/users/users.service';
-
+import { GameType } from './schema/product.schema';
+import { Category, CategoryDocument } from '@/categories/schema/categories.schema';
 @Injectable()
 export class ProductService {
   constructor(
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>, // ✅ THÊM
     private readonly cloudinaryService: CloudinaryService,
     private readonly userService: UsersService,
   ) {}
+  private async attachCategoryName(products: any[]) {
+    const categories = await this.categoryModel.find().lean().exec();
 
-  async findAll(): Promise<ProductDocument[]> {
-    const filter = {
-      deleted: false,
-    };
+    return products.map((p: any) => {
+      const category = categories.find(
+        (c) => c._id.toString() === p.category
+      );
 
-    return this.productModel.find(filter);
+      return {
+        ...p,
+        categoryName: category?.name || null,
+      };
+    });
+  }
+
+  async findAll() {
+    // 1. Lấy danh sách product
+    const products = await this.productModel
+      .find({ deleted: false })
+      .lean()
+      .exec();
+
+    const categories = await this.categoryModel.find().lean().exec();
+
+    return products.map((p: any) => {
+      const category = categories.find(
+        (c) => c._id.toString() === p.category
+      );
+
+      return {
+        ...p,
+        categoryName: category?.name || null,
+      };
+    });
+  }
+
+ 
+  async findLatestByReleaseDate(limit = 5) {
+    const products = await this.productModel
+      .find({
+        deleted: false,
+        releaseDate: { $exists: true },
+      })
+      .sort({ releaseDate: -1 })
+      .limit(limit)
+      .lean()
+      .exec();
+
+    return this.attachCategoryName(products);
   }
 
   async findTrash(): Promise<ProductDocument[]> {
@@ -36,20 +80,37 @@ export class ProductService {
     return this.productModel.find(filter);
   }
 
-  async findByCategory(category: string): Promise<ProductDocument[]> {
-    const filter = {
-      deleted: false,
-      category: category,
-    };
+  async findByCategory(categoryId: string) {
+    const products = await this.productModel
+      .find({
+        deleted: false,
+        category: categoryId,
+      })
+      .lean()
+      .exec();
 
-    return this.productModel.find(filter);
+    return this.attachCategoryName(products);
   }
 
-  async getProduct(id: string): Promise<ProductDocument> {
-    const product = await this.productModel.findById(id).exec();
+
+
+  async getProduct(id: string) {
+    const product = await this.productModel.findById(id).lean().exec();
+
     if (!product) throw new NotFoundException('Product not found');
-    return product;
+
+    const category = await this.categoryModel
+      .findById(product.category)
+      .lean()
+      .exec();
+
+    return {
+      ...product,
+      categoryName: category?.name || null,
+    };
   }
+
+
 
   async create(
     product: CreateProductDto,
@@ -86,6 +147,21 @@ export class ProductService {
       updatedAt: Date.now(),
     });
     return newProduct.save();
+  }
+  async findByType(type: GameType) {
+    if (!Object.values(GameType).includes(type)) {
+      throw new BadRequestException('Invalid product type');
+    }
+
+    const products = await this.productModel
+      .find({
+        deleted: false,
+        type: type,
+      })
+      .lean()
+      .exec();
+
+    return this.attachCategoryName(products);
   }
 
   async update(

@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import mongoose from 'mongoose'; // ✅ BẮT BUỘC
+import { Category } from '@/categories/schema/categories.schema'; // ✅ BẮT BUỘC
+
 
 export type ProductDocument = HydratedDocument<Product>;
 
@@ -19,7 +22,7 @@ export class Product {
   @Prop()
   releaseDate: Date;
 
-  @Prop()
+  @Prop()  // ✅ ÉP LƯU STRING ĐÚNG VỚI DB HIỆN TẠI
   category: string;
 
   @Prop()
@@ -90,3 +93,4 @@ export class Product {
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+

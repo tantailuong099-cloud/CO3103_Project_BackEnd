@@ -143,4 +143,12 @@ export class OrderService {
 
     return await newOrder.save();
   }
+  async getUserOrders(userId: string) {
+    return this.orderModel.find({ cartOwner: userId }).sort({ _id: -1 });
+  }
+
+  async getOrderById(userId: string, orderId: string) {
+    return this.orderModel.findOne({ _id: orderId, cartOwner: userId });
+  }
+
 }

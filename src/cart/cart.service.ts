@@ -113,7 +113,7 @@ export class CartService {
       cart.items.map(async (item: CartItem) => {
         const product = await this.productService.getProduct(item.productId);
         return {
-          ...product.toObject(),
+          ...product,
           quantity: item.quantity,
         };
       }),
@@ -134,7 +134,7 @@ export class CartService {
         const product = await this.productService.getProduct(item.productId);
         if (product?.type !== GameType.PHYSICAL) return null;
         return {
-          ...product.toObject(),
+          ...product,
           quantity: item.quantity,
         };
       }),
@@ -155,7 +155,7 @@ export class CartService {
         const product = await this.productService.getProduct(item.productId);
         if (product?.type !== GameType.DIGITAL) return null;
         return {
-          ...product.toObject(),
+          ...product,
           quantity: item.quantity,
         };
       }),

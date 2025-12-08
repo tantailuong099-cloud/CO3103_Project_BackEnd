@@ -10,6 +10,7 @@ import { UserBasedDocument } from '../users/schema/userbase.schema';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
+import { UserRole } from '@/users/schema/userbase.schema';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,11 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(registerDto.password, salt);
 
+    const role = registerDto.role ?? UserRole.USER; // hoặc UserRole.USER
+
     return this.userService.create({
       ...registerDto,
+      role,
       password: hashedPassword,
     });
   }
