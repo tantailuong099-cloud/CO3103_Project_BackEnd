@@ -10,8 +10,6 @@ export class User extends UserBased {
   cartId: string;
   @Prop({ default: 'active' })
   status: string;
-  @Prop()
-  address: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
