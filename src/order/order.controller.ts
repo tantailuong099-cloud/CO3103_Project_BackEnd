@@ -23,7 +23,6 @@ export class OrderController {
     @Body('paymentMethod') paymentMethod: string,
   ) {
     const userId = req.user.userId;
-
     return this.orderService.checkout(userId, shippingAddress, paymentMethod);
   }
 
@@ -39,8 +38,8 @@ export class OrderController {
     return this.orderService.checkoutPartial(
       userId,
       productIds,
-      shippingAddress, // ✅ TRUYỀN XUỐNG
-      paymentMethod, // ✅ TRUYỀN XUỐNG
+      shippingAddress,
+      paymentMethod,
     );
   }
 
@@ -60,9 +59,20 @@ export class OrderController {
     return this.orderService.totalRevenue();
   }
 
+  // ✅ GIỮ LẠI LẤY DANH SÁCH ORDER
   @Get()
   async getOrderList() {
     return this.orderService.getOrderDetailList();
+  }
+
+  // ✅ GIỮ LẠI HUỶ ĐƠN HÀNG
+  @Post('cancel/:id')
+  async cancelOrder(
+    @Req() req,
+    @Param('id') orderId: string,
+  ) {
+    const userId = req.user.userId;
+    return this.orderService.cancelOrder(userId, orderId);
   }
 
   @Delete(':id')
