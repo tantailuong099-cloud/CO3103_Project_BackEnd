@@ -299,4 +299,8 @@ export class ProductService {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async getProductDetailById(id: string) {
+    return this.productModel.findById(id);
+  }
 }

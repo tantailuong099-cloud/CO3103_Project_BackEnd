@@ -1,5 +1,13 @@
-
-import { Body, UseGuards, Controller, Post, Req, Get, Param } from '@nestjs/common';
+import {
+  Body,
+  UseGuards,
+  Controller,
+  Post,
+  Req,
+  Get,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
@@ -16,13 +24,8 @@ export class OrderController {
   ) {
     const userId = req.user.userId;
 
-    return this.orderService.checkout(
-      userId,
-      shippingAddress,
-      paymentMethod,
-    );
+    return this.orderService.checkout(userId, shippingAddress, paymentMethod);
   }
-
 
   @Post('checkout/partial')
   async checkoutPartial(
@@ -36,8 +39,8 @@ export class OrderController {
     return this.orderService.checkoutPartial(
       userId,
       productIds,
-      shippingAddress,   // ✅ TRUYỀN XUỐNG
-      paymentMethod,     // ✅ TRUYỀN XUỐNG
+      shippingAddress, // ✅ TRUYỀN XUỐNG
+      paymentMethod, // ✅ TRUYỀN XUỐNG
     );
   }
 
@@ -47,5 +50,13 @@ export class OrderController {
     return this.orderService.getUserOrders(userId);
   }
 
+  @Get()
+  async getOrderList() {
+    return this.orderService.getOrderDetailList();
+  }
 
+  @Delete(':id')
+  async deleteOrder(@Param('id') id: string) {
+    return await this.orderService.deleteOrder(id);
+  }
 }

@@ -5,6 +5,7 @@ import { Order, OrderDocument } from './schema/order.schema';
 import { CartService } from '../cart/cart.service';
 import { ProductService } from '../product/product.service';
 import { GameType } from '@/product/schema/product.schema';
+import { UsersService } from '@/users/users.service';
 
 @Injectable()
 export class OrderService {
@@ -12,6 +13,7 @@ export class OrderService {
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     private readonly cartService: CartService,
     private readonly productService: ProductService,
+    private readonly userService: UsersService,
   ) {}
 
   // Checkout toàn bộ cart
@@ -151,4 +153,69 @@ export class OrderService {
     return this.orderModel.findOne({ _id: orderId, cartOwner: userId });
   }
 
+  async getOrderDetailList() {
+    // 1. Lấy danh sách order, dùng lean() để trả về object JS thuần (nhanh hơn)
+    const orderList = await this.orderModel.find({}).lean();
+
+    // 2. Dùng Promise.all để xử lý bất đồng bộ cho từng order
+    const mergeResult = await Promise.all(
+      orderList.map(async (order) => {
+        // Kỹ thuật Destructuring: Tách cartOwner và items ra riêng,
+        // biến orderInfo sẽ chứa toàn bộ thông tin còn lại (_id, status, totalPrice, dates...)
+        const { cartOwner, items, ...orderInfo } = order;
+
+        console.log(cartOwner);
+
+        // --- XỬ LÝ USER ---
+        // Thêm await để lấy dữ liệu user thật
+        const userRaw = await this.userService.findById(cartOwner);
+
+        console.log(userRaw);
+
+        // Chỉ lấy các trường cần thiết (Tên, email...).
+        // Lưu ý: Document User bạn gửi không có phone hay address, nên mình chỉ map name và email.
+        // Nếu trong DB có field phone/address, bạn bỏ comment ra nhé.
+        const user = userRaw
+          ? {
+              name: userRaw.name,
+              email: userRaw.email,
+              phone: userRaw.phoneNumber,
+              address: userRaw.address,
+            }
+          : null;
+
+        // --- XỬ LÝ DANH SÁCH SẢN PHẨM ---
+        // items là mảng -> cần map và Promise.all để đợi lấy xong info của từng sản phẩm
+        const productDetailList = await Promise.all(
+          items.map(async (item) => {
+            const product = await this.productService.getProductDetailById(
+              item.productId,
+            );
+
+            // Trả về object gồm thông tin từ Product và số lượng từ Order Item
+            return {
+              name: product ? product.name : 'Unknown Product',
+              avatar: product ? product.avatar : null, // Lấy ảnh đại diện
+              quantity: item.quantity, // Lấy số lượng từ order item
+              // Có thể thêm price nếu cần
+              price: product ? product.price : 0,
+            };
+          }),
+        );
+
+        // --- TRẢ VỀ KẾT QUẢ CUỐI CÙNG ---
+        return {
+          ...orderInfo, // Toàn bộ thông tin order (trừ cartOwner, items)
+          user, // Thông tin user đã lọc
+          productDetailList, // Danh sách chi tiết sản phẩm kèm ảnh, tên
+        };
+      }),
+    );
+
+    return mergeResult;
+  }
+
+  async deleteOrder(id: string) {
+    return this.orderModel.deleteOne({ _id: id }).exec();
+  }
 }
