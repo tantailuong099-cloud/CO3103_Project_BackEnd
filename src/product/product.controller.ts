@@ -38,10 +38,16 @@ export class ProductController {
 
     return this.productService.findByType(type);
   }
+
+  @Get('platform/:language')
+  async findByPlat(@Param('language') language: string): Promise<Product[]> {
+    return this.productService.findByPlat(language);
+  }
   @Get('test')
   testRoute() {
     return 'PRODUCT ROUTER WORKS';
   }
+
 
   @UseGuards(JwtAuthGuard)
   @Get('trash')
@@ -52,11 +58,12 @@ export class ProductController {
   async findLatest(): Promise<Product[]> {
     return this.productService.findLatestByReleaseDate(5);
   }
-
   @Get(':id')
   async get(@Param('id') id: string): Promise<Product> {
     return this.productService.getProduct(id);
   }
+
+
 
   @UseGuards(JwtAuthGuard)
   @Post()

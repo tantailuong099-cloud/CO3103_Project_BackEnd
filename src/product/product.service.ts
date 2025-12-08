@@ -64,15 +64,15 @@ export class ProductService {
     const products = await this.productModel
       .find({
         deleted: false,
-        releaseDate: { $exists: true },
       })
-      .sort({ releaseDate: -1 })
+      .sort({ createdAt: -1 }) // ✅ sort newest first by createdAt
       .limit(limit)
       .lean()
       .exec();
 
     return this.attachCategoryName(products);
   }
+
 
   async findTrash(): Promise<ProductDocument[]> {
     const filter = {
@@ -159,6 +159,18 @@ export class ProductService {
       .find({
         deleted: false,
         type: type,
+      })
+      .lean()
+      .exec();
+
+    return this.attachCategoryName(products);
+  }
+
+  async findByPlat(platform: string) {
+    const products = await this.productModel
+      .find({
+        deleted: false,
+        language: { $regex: new RegExp(`^${platform}$`, 'i') },
       })
       .lean()
       .exec();
