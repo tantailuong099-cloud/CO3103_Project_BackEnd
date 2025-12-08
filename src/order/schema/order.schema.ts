@@ -4,7 +4,7 @@ import { OrderItem, OrderItemSchema } from './orderItem.schema';
 
 export type OrderDocument = HydratedDocument<Order>;
 
-@Schema({timestamps: true})
+@Schema({ timestamps: true })
 export class Order {
   @Prop({ required: true })
   cartOwner: string;
@@ -26,6 +26,9 @@ export class Order {
 
   @Prop()
   paymentMethod?: string;
+
+  @Prop({ default: false })
+  deleted: boolean;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

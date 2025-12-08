@@ -50,6 +50,16 @@ export class OrderController {
     return this.orderService.getUserOrders(userId);
   }
 
+  @Get('count')
+  async countOrder() {
+    return this.orderService.countOrder();
+  }
+
+  @Get('revenue')
+  async getRevenue() {
+    return this.orderService.totalRevenue();
+  }
+
   @Get()
   async getOrderList() {
     return this.orderService.getOrderDetailList();
@@ -58,5 +68,15 @@ export class OrderController {
   @Delete(':id')
   async deleteOrder(@Param('id') id: string) {
     return await this.orderService.deleteOrder(id);
+  }
+
+  @Delete('soft/:id')
+  async softDelete(@Param('id') id: string) {
+    return this.orderService.softDelete(id);
+  }
+
+  @Get('trash')
+  async getTrash() {
+    return this.orderService.getTrash();
   }
 }

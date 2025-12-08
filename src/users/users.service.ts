@@ -5,15 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserBased, UserBasedDocument } from './schema/userbase.schema';
+import {
+  UserBased,
+  UserBasedDocument,
+  UserRole,
+} from './schema/userbase.schema';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
+import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(UserBased.name) private userModel: Model<UserBasedDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async findAll(): Promise<UserBasedDocument[]> {
@@ -57,10 +63,43 @@ export class UsersService {
     return newUser.save();
   }
 
-  async update(id: string, user: UpdateUserDto): Promise<UserBasedDocument> {
+  // async update(id: string, user: UpdateUserDto): Promise<UserBasedDocument> {
+  //   try {
+  //     const updatedUser = await this.userModel
+  //       .findOneAndUpdate({ _id: id, deleted: false }, user, { new: true })
+  //       .exec();
+
+  //     if (!updatedUser) {
+  //       throw new NotFoundException(`User not found or has been deleted`);
+  //     }
+
+  //     return updatedUser;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err);
+  //   }
+  // }
+
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    file?: Express.Multer.File,
+  ): Promise<UserBasedDocument> {
     try {
+      // 3. Nếu có file (người dùng upload ảnh mới) -> Upload lên Cloudinary
+      if (file) {
+        const result = await this.cloudinaryService.uploadFile(file);
+        // Gán URL secure từ Cloudinary vào field avatar của DTO
+        // Lưu ý: DTO hoặc Schema của bạn phải có field 'avatar'
+        updateUserDto['avatar'] = result.secure_url;
+      }
+
+      // 4. Update xuống database
       const updatedUser = await this.userModel
-        .findOneAndUpdate({ _id: id, deleted: false }, user, { new: true })
+        .findOneAndUpdate(
+          { _id: id, deleted: false },
+          updateUserDto,
+          { new: true }, // Trả về document sau khi update
+        )
         .exec();
 
       if (!updatedUser) {
@@ -131,5 +170,11 @@ export class UsersService {
   async findByEmail(email: string): Promise<UserBased | null> {
     const user = await this.userModel.findOne({ email: email }).exec();
     return user;
+  }
+
+  async countAllUser() {
+    return this.userModel.countDocuments({
+      role: UserRole.USER,
+    });
   }
 }

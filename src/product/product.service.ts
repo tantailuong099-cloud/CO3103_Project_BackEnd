@@ -56,6 +56,10 @@ export class ProductService {
     });
   }
 
+  async getTrash() {
+    return this.productModel.find({ deleted: true });
+  }
+
   async findLatestByReleaseDate(limit = 5) {
     const products = await this.productModel
       .find({
@@ -95,10 +99,14 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('Product not found');
 
-    const category = await this.categoryModel
-      .findById(product.category)
-      .lean()
-      .exec();
+    let category = null;
+
+    if (product.category) {
+      category = await this.categoryModel
+        .findById(product.category)
+        .lean()
+        .exec();
+    }
 
     return {
       ...product,

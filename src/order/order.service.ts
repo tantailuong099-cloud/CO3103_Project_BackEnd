@@ -155,7 +155,7 @@ export class OrderService {
 
   async getOrderDetailList() {
     // 1. Lấy danh sách order, dùng lean() để trả về object JS thuần (nhanh hơn)
-    const orderList = await this.orderModel.find({}).lean();
+    const orderList = await this.orderModel.find({ deleted: false }).lean();
 
     // 2. Dùng Promise.all để xử lý bất đồng bộ cho từng order
     const mergeResult = await Promise.all(
@@ -217,5 +217,30 @@ export class OrderService {
 
   async deleteOrder(id: string) {
     return this.orderModel.deleteOne({ _id: id }).exec();
+  }
+
+  async countOrder() {
+    return this.orderModel.countDocuments();
+  }
+
+  async totalRevenue() {
+    let revenue = 0;
+    const orderList = await this.orderModel.find({}).lean();
+
+    orderList.forEach((order) => {
+      revenue += Number(order.totalPrice || 0);
+    });
+
+    return revenue;
+  }
+
+  async softDelete(id: string) {
+    return this.orderModel
+      .updateOne({ _id: id }, { $set: { deleted: true } })
+      .exec();
+  }
+
+  async getTrash() {
+    return this.orderModel.find({ deleted: true }).exec();
   }
 }

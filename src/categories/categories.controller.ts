@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -21,8 +22,17 @@ export class CategoriesController {
   constructor(private readonly categoryService: CategoriesService) {}
 
   @Get()
-  async getCategoryList(): Promise<Category[]> {
-    return this.categoryService.getlist();
+  async getCategoryList(
+    // Nhận toàn bộ query params vào biến query
+    @Query()
+    query: {
+      keyword?: string;
+      creator?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<Category[]> {
+    return this.categoryService.getlist(query);
   }
 
   @Get('product/:category')
@@ -36,8 +46,6 @@ export class CategoriesController {
   async getCategoryDetail(@Param('id') id: string): Promise<Category> {
     return this.categoryService.findOne(id);
   }
-
-  
 
   // @Post()
   // async createNewCategory(

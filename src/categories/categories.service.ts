@@ -63,16 +63,66 @@ export class CategoriesService {
     return updatedCategory;
   }
 
-  async getlist(): Promise<CategoryDocument[]> {
-    const filter = {};
-    return this.modelCategory.find(filter).sort({ createdAt: -1 }).exec(); // Thêm sort để mới nhất lên đầu
+  async getlist(query: {
+    keyword?: string;
+    creator?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<CategoryDocument[]> {
+    const { keyword, creator, startDate, endDate } = query;
+
+    // 1. Khởi tạo filter rỗng
+    const filter: any = {};
+
+    // 2. Xử lý tìm kiếm theo từ khóa (Keyword)
+    // Tìm kiếm tương đối (LIKE) trong trường 'name' hoặc 'description'
+    if (keyword) {
+      // $regex: tìm kiếm chuỗi con
+      // $options: 'i' để không phân biệt hoa thường
+      filter.$or = [
+        { name: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+      ];
+    }
+
+    // 3. Xử lý filter theo người tạo (Creator)
+    if (creator) {
+      // Nếu muốn tìm chính xác value (vì đây là select box)
+      filter.createdBy = creator;
+
+      // Hoặc nếu muốn tìm tương đối:
+      // filter.createdBy = { $regex: creator, $options: 'i' };
+    }
+
+    // 4. Xử lý lọc theo khoảng thời gian (Date Range)
+    if (startDate || endDate) {
+      filter.createdAt = {};
+
+      if (startDate) {
+        // $gte: Greater Than or Equal (>=)
+        filter.createdAt.$gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        // $lte: Less Than or Equal (<=)
+        // Lưu ý: endDate gửi lên thường là 00:00:00 của ngày đó.
+        // Cần chỉnh thành 23:59:59 của ngày đó để lấy trọn vẹn ngày.
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    // 5. Thực thi câu lệnh tìm kiếm
+    return this.modelCategory
+      .find(filter)
+      .sort({ createdAt: -1 }) // Mới nhất lên đầu
+      .exec();
   }
 
   // ... (Hàm getProductbyCategory giữ nguyên)
   async getProductbyCategory(id: string): Promise<ProductDocument[]> {
-    const categoryDoc = await this.modelCategory
-      .findById(id)
-      .exec();
+    const categoryDoc = await this.modelCategory.findById(id).exec();
 
     if (!categoryDoc) {
       return [];

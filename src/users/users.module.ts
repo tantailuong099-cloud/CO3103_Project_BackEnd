@@ -5,9 +5,11 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User, UserSchema } from './schema/user.schema';
 import { Admin, AdminSchema } from './schema/admin.schema';
+import { CloudinaryModule } from '@/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
+    CloudinaryModule,
     MongooseModule.forFeatureAsync([
       {
         name: UserBased.name,

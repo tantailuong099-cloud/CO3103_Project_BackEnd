@@ -40,8 +40,8 @@ export class ProductController {
   }
   @Get('test')
   testRoute() {
-  return 'PRODUCT ROUTER WORKS';
-}
+    return 'PRODUCT ROUTER WORKS';
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('trash')
@@ -57,6 +57,7 @@ export class ProductController {
   async get(@Param('id') id: string): Promise<Product> {
     return this.productService.getProduct(id);
   }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(
@@ -90,7 +91,6 @@ export class ProductController {
   //   return this.productService.update(id, updateUserDto);
   // }
   @UseGuards(JwtAuthGuard)
-
   @Patch(':id')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -122,7 +122,6 @@ export class ProductController {
     return this.productService.hardDelete(id);
   }
   @UseGuards(JwtAuthGuard)
-
   @Patch('/restore/:id')
   async restore(@Param('id') id: string): Promise<Product> {
     return this.productService.restore(id);
