@@ -12,7 +12,10 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { CloudinaryService } from '@/cloudinary/cloudinary.service';
 import { UsersService } from '@/users/users.service';
 import { GameType } from './schema/product.schema';
-import { Category, CategoryDocument } from '@/categories/schema/categories.schema';
+import {
+  Category,
+  CategoryDocument,
+} from '@/categories/schema/categories.schema';
 @Injectable()
 export class ProductService {
   constructor(
@@ -25,9 +28,7 @@ export class ProductService {
     const categories = await this.categoryModel.find().lean().exec();
 
     return products.map((p: any) => {
-      const category = categories.find(
-        (c) => c._id.toString() === p.category
-      );
+      const category = categories.find((c) => c._id.toString() === p.category);
 
       return {
         ...p,
@@ -46,9 +47,7 @@ export class ProductService {
     const categories = await this.categoryModel.find().lean().exec();
 
     return products.map((p: any) => {
-      const category = categories.find(
-        (c) => c._id.toString() === p.category
-      );
+      const category = categories.find((c) => c._id.toString() === p.category);
 
       return {
         ...p,
@@ -57,7 +56,6 @@ export class ProductService {
     });
   }
 
- 
   async findLatestByReleaseDate(limit = 5) {
     const products = await this.productModel
       .find({
@@ -92,8 +90,6 @@ export class ProductService {
     return this.attachCategoryName(products);
   }
 
-
-
   async getProduct(id: string) {
     const product = await this.productModel.findById(id).lean().exec();
 
@@ -109,8 +105,6 @@ export class ProductService {
       categoryName: category?.name || null,
     };
   }
-
-
 
   async create(
     product: CreateProductDto,
