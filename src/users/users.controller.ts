@@ -38,6 +38,13 @@ export class UsersController {
       return this.usersService.findById(req.user.userId);
     }
 
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  async updateMe(@Req() req, @Body() updateUserDto: UpdateUserDto) {
+    // req.user.userId comes from your JWT payload
+    return this.usersService.update(req.user.userId, updateUserDto);
+  }
+
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<UserBased> {
@@ -51,6 +58,7 @@ export class UsersController {
   ): Promise<UserBased> {
     return this.usersService.update(id, updateUserDto);
   }
+
 
   @Patch('/deleted/:id')
   async softDelete(@Param('id') id: string): Promise<UserBased> {

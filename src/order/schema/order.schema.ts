@@ -4,7 +4,7 @@ import { OrderItem, OrderItemSchema } from './orderItem.schema';
 
 export type OrderDocument = HydratedDocument<Order>;
 
-@Schema()
+@Schema({timestamps: true})
 export class Order {
   @Prop({ required: true })
   cartOwner: string;

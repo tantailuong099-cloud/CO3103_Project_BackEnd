@@ -11,7 +11,7 @@ export enum GameType {
   PHYSICAL = 'physical',
 }
 
-@Schema()
+@Schema({timestamps: true})
 export class Product {
   @Prop()
   name: string;

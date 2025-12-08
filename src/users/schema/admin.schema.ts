@@ -4,7 +4,7 @@ import { UserBased } from './userbase.schema';
 
 export type AdminDocument = HydratedDocument<Admin>;
 
-@Schema()
+@Schema({timestamps: true})
 export class Admin extends UserBased {
   @Prop()
   permissions: string[];
