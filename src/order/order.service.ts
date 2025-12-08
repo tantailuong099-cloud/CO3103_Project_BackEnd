@@ -16,7 +16,7 @@ export class OrderService {
     private readonly userService: UsersService,
   ) {}
 
-  // Checkout toàn bộ cart
+  // ✅ Checkout toàn bộ cart
   async checkout(
     userId: string,
     shippingAddress?: string,
@@ -35,7 +35,6 @@ export class OrderService {
       const product = await this.productService.getProduct(item.productId);
       if (!product) throw new BadRequestException('Invalid product in cart');
 
-      // Kiểm tra stock nếu physical
       if (product.type === GameType.PHYSICAL) {
         if (product.stock < item.quantity) {
           throw new BadRequestException(`Not enough stock for ${product.name}`);
@@ -55,7 +54,6 @@ export class OrderService {
       });
     }
 
-    // Tạo order
     const newOrder = new this.orderModel({
       cartOwner: userId,
       items: orderItems,
@@ -65,13 +63,11 @@ export class OrderService {
       paymentMethod,
     });
 
-    // Clear cart
     await this.cartService.clearCart(userId);
-
     return await newOrder.save();
   }
 
-  // Checkout một phần cart
+  // ✅ Checkout một phần cart
   async checkoutPartial(
     userId: string,
     productIds: string[],
@@ -117,7 +113,6 @@ export class OrderService {
         price: product.price,
       });
 
-      // Giảm quantity trong cart hoặc xóa nếu toàn bộ
       cart.items = cart.items
         .map((ci) => {
           if (ci.productId.toString() === item.productId.toString()) {
@@ -125,7 +120,7 @@ export class OrderService {
               ci.quantity -= item.quantity;
               return ci;
             }
-            return null; // xóa item
+            return null;
           }
           return ci;
         })
@@ -145,6 +140,7 @@ export class OrderService {
 
     return await newOrder.save();
   }
+
   async getUserOrders(userId: string) {
     return this.orderModel.find({ cartOwner: userId }).sort({ _id: -1 });
   }
@@ -153,28 +149,16 @@ export class OrderService {
     return this.orderModel.findOne({ _id: orderId, cartOwner: userId });
   }
 
+  // ✅ GIỮ getOrderDetailList
   async getOrderDetailList() {
-    // 1. Lấy danh sách order, dùng lean() để trả về object JS thuần (nhanh hơn)
     const orderList = await this.orderModel.find({}).lean();
 
-    // 2. Dùng Promise.all để xử lý bất đồng bộ cho từng order
     const mergeResult = await Promise.all(
       orderList.map(async (order) => {
-        // Kỹ thuật Destructuring: Tách cartOwner và items ra riêng,
-        // biến orderInfo sẽ chứa toàn bộ thông tin còn lại (_id, status, totalPrice, dates...)
         const { cartOwner, items, ...orderInfo } = order;
 
-        console.log(cartOwner);
-
-        // --- XỬ LÝ USER ---
-        // Thêm await để lấy dữ liệu user thật
         const userRaw = await this.userService.findById(cartOwner);
 
-        console.log(userRaw);
-
-        // Chỉ lấy các trường cần thiết (Tên, email...).
-        // Lưu ý: Document User bạn gửi không có phone hay address, nên mình chỉ map name và email.
-        // Nếu trong DB có field phone/address, bạn bỏ comment ra nhé.
         const user = userRaw
           ? {
               name: userRaw.name,
@@ -184,30 +168,25 @@ export class OrderService {
             }
           : null;
 
-        // --- XỬ LÝ DANH SÁCH SẢN PHẨM ---
-        // items là mảng -> cần map và Promise.all để đợi lấy xong info của từng sản phẩm
         const productDetailList = await Promise.all(
           items.map(async (item) => {
             const product = await this.productService.getProductDetailById(
               item.productId,
             );
 
-            // Trả về object gồm thông tin từ Product và số lượng từ Order Item
             return {
               name: product ? product.name : 'Unknown Product',
-              avatar: product ? product.avatar : null, // Lấy ảnh đại diện
-              quantity: item.quantity, // Lấy số lượng từ order item
-              // Có thể thêm price nếu cần
+              avatar: product ? product.avatar : null,
+              quantity: item.quantity,
               price: product ? product.price : 0,
             };
           }),
         );
 
-        // --- TRẢ VỀ KẾT QUẢ CUỐI CÙNG ---
         return {
-          ...orderInfo, // Toàn bộ thông tin order (trừ cartOwner, items)
-          user, // Thông tin user đã lọc
-          productDetailList, // Danh sách chi tiết sản phẩm kèm ảnh, tên
+          ...orderInfo,
+          user,
+          productDetailList,
         };
       }),
     );
@@ -215,7 +194,48 @@ export class OrderService {
     return mergeResult;
   }
 
+  // ✅ GIỮ deleteOrder
   async deleteOrder(id: string) {
     return this.orderModel.deleteOne({ _id: id }).exec();
+  }
+
+  // ✅ GIỮ cancelOrder + restore stock
+  async cancelOrder(userId: string, orderId: string) {
+    const order = await this.orderModel.findOne({
+      _id: orderId,
+      cartOwner: userId,
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    if (order.status === 'cancelled') {
+      throw new BadRequestException('Order already cancelled');
+    }
+
+    if (order.status === 'shipped' || order.status === 'delivered') {
+      throw new BadRequestException('Order can no longer be cancelled');
+    }
+
+    for (const item of order.items) {
+      const product = await this.productService.getProduct(item.productId);
+
+      if (product && product.type === GameType.PHYSICAL) {
+        await this.productService.updateStock(
+          product._id.toString(),
+          product.stock + item.quantity,
+        );
+      }
+    }
+
+    order.status = 'cancelled';
+    await order.save();
+
+    return {
+      success: true,
+      message: 'Order cancelled successfully',
+      order,
+    };
   }
 }
